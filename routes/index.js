@@ -12,14 +12,19 @@ var client = new Twitter({
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
-  // res.render('index', { title: 'Express' });
-
-  var params = {screen_name: 'chrissgaona', count: 5};
-  client.get('statuses/user_timeline', params, function(error, tweets, response){
-    if (!error) {
-      res.send(tweets);
-    }
-  });
+  // var params = {screen_name: 'chrissgaona', count: 5};
+  // client.get('statuses/user_timeline', params, function(error, tweets, response){
+  //   if (!error) {
+  //     console.log(tweets);
+  //     // res.send(tweets);
+  //     res.render('index', {
+  //       tweets: tweets
+  //     });
+  //   }
+  // });
+  res.render('index', {
+        title: 'hello'
+      });
 });
 
 module.exports = router;
