@@ -56,6 +56,8 @@ router.get('/', function(req, res, next) {
       getFriends(tweetsObject, tweetsArray);
 
       // console.log(tweetsArray);
+    } else {
+      console.log(error);
     }
   });
 
@@ -75,28 +77,104 @@ router.get('/', function(req, res, next) {
           };
           friendsArray.push(friendsObject);
         }
-        console.log(friendsArray);
-      }
-      console.log('Following: ' + tweetsObject.friends_count);
+        // console.log(friendsArray);
 
-      // getMessages();
+        getReceivedMessages(tweetsObject, tweetsArray, friendsArray);
+      } else {
+        console.log(error);
+      }
+      // console.log('Following: ' + tweetsObject.friends_count);
+
+      // res.render('index', {
+      //   username: tweetsObject.screen_name,
+      //   following: tweetsObject.friends_count,
+      //   tweets: tweetsArray,
+      //   friends: friendsArray
+      // });
+    });
+  }
+
+  function getReceivedMessages(tweetsObject, tweetsArray, friendsArray) {
+    client.get('direct_messages', params, function(error, messages, response){
+      var messagesReceivedArray = [];
+
+      if (!error) {
+        var messagesReceivedObject;
+        // console.log(messages);
+
+        for (var i = 0; i < messages.length; i++) {
+          var date = messages[i].created_at.split(' ');
+
+          messagesReceivedObject = {
+            recipient: true,
+            text: messages[i].text,
+            name: messages[i].sender.name,
+            created_at: messages[i].created_at,
+            date: date[1] + ' ' + date[2]
+          };
+          messagesReceivedArray.push(messagesReceivedObject);
+        }
+        // console.log(messagesReceivedArray);
+
+        getSentMessages(tweetsObject, tweetsArray, friendsArray, messagesReceivedArray);
+
+      } else {
+        console.log(error);
+      }
+    });
+  }
+
+  function getSentMessages(tweetsObject, tweetsArray, friendsArray, messagesReceivedArray) {
+    client.get('direct_messages/sent', params, function(error, messages, response){
+
+      var messagesSentArray = [];
+
+      var allMessages;
+      if (!error) {
+        var messagesSentObject;
+
+        // console.log(messages);
+        // allMessages = receivedMessages.concat(messages);
+
+        for (var i = 0; i < messages.length; i++) {
+          var date = messages[i].created_at.split(' ');
+
+          messagesSentObject = {
+            recipient: false,
+            text: messages[i].text,
+            name: messages[i].sender.name,
+            created_at: messages[i].created_at,
+            date: date[1] + ' ' + date[2]
+          };
+          messagesSentArray.push(messagesSentObject);
+        }
+
+        allMessages = messagesReceivedArray.concat(messagesSentArray);
+
+        allMessages.sort(function(a, b){
+          var keyA = new Date(a.created_at),
+              keyB = new Date(b.created_at);
+          // Compare the 2 dates
+          if(keyA < keyB) return -1;
+          if(keyA > keyB) return 1;
+          return 0;
+      });
+
+        console.log(allMessages);
+
+      } else {
+        console.log(error);
+      }
 
       res.render('index', {
         username: tweetsObject.screen_name,
         following: tweetsObject.friends_count,
         tweets: tweetsArray,
-        friends: friendsArray
+        friends: friendsArray,
+        messages: allMessages
       });
     });
   }
-
-  // function getMessages() {
-  //   client.get('direct_messages', params, function(error, messages, response){
-  //     if (!error) {
-  //       console.log(messages);
-  //     }
-  //   });
-  // }
 
 });
 

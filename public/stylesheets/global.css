@@ -2410,6 +2410,9 @@ a:hover .app--avatar {
 .app--message--list, .app--message--conversation {
   list-style: none;
 }
+.app--message--list {
+  padding-bottom: 195px;
+}
 /* line 210, ../sass/global.sass */
 .app--message--list .app--avatar, .app--message--conversation .app--avatar {
   position: absolute;

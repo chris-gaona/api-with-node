@@ -25,8 +25,8 @@ block content
     form
       .circle--fluid
         .circle--fluid--cell.circle--fluid--primary.align-bottom.app--tweet--post
-          .app--avatar(style='background-image: url(public/images/m-spore.png)')
-            img(src='public/images/m-spore.png')
+          .app--avatar(style='background-image: url(images/m-spore.png)')
+            img(src='images/m-spore.png')
           |           
           textarea#tweet-textarea.circle--textarea--input(placeholder="What's happening?")
           |           
@@ -126,46 +126,31 @@ block content
           li
             h3
               | Conversation with 
-              a Jill Spore
+              //- a #{recipient}
             |             
             ul.app--message--conversation
-              li.app--message
-                .app--avatar(style='background-image: url(public/images/f-spore.png)')
-                  img(src='public/images/f-spore.png')
-                |                 
-                p.app--message--text How are things?
-                |                 
-                p.app--message--timestamp 3 hours ago
-              |               
-              li.app--message--me
-                .app--avatar(style='background-image: url(public/images/m-spore.png)')
-                  img(src='public/images/m-spore.png')
-                |                 
-                p.app--message--text
-                  | Great! How about you? Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-                |                 
-                p.app--message--timestamp 2 hours ago
-              |               
-              li.app--message
-                .app--avatar(style='background-image: url(public/images/f-spore.png)')
-                  img(src='public/images/f-spore.png')
-                |                 
-                p.app--message--text Fantastic! You wanna grab lunch?
-                |                 
-                p.app--message--timestamp 2 hours ago
-              |               
-              li.app--message--me
-                .app--avatar(style='background-image: url(public/images/m-spore.png)')
-                  img(src='public/images/m-spore.png')
-                |                 
-                p.app--message--text Totes mcgotes. How about Mackey&apos;s?
-                |                 
-                p.app--message--timestamp 1 hour ago
-              |               
-              li.app--message
-                .app--avatar(style='background-image: url(public/images/f-spore.png)')
-                  img(src='public/images/f-spore.png')
-                |                 
-                p.app--message--text Aww yeah.. I&apos;m craving a Triple Quarter Mack!
-                |                 
-                p.app--message--timestamp 1 hour ago
+              each message in messages
+                if message.recipient
+                  li.app--message
+                    .app--avatar(style='background-image: url(images/f-spore.png)')
+                      img(src='images/f-spore.png')
+                    |                 
+                    p.app--message--text #{message.text}
+                    |                 
+                    p.app--message--timestamp #{message.date} 
+                else         
+                  li.app--message--me
+                    .app--avatar(style='background-image: url(images/m-spore.png)')
+                      img(src='images/m-spore.png')
+                    |                 
+                    p.app--message--text #{message.text}
+                    |                 
+                    p.app--message--timestamp #{message.date}
+                  //- |               
+                  //- li.app--message
+                  //-   .app--avatar(style='background-image: url(public/images/f-spore.png)')
+                  //-     img(src='public/images/f-spore.png')
+                  //-   |                 
+                  //-   p.app--message--text Fantastic! You wanna grab lunch?
+                  //-   |                 
+                  //-   p.app--message--timestamp 2 hours ago
