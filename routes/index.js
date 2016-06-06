@@ -15,7 +15,7 @@ router.get('/', function(req, res, next) {
   // res.render('index');
 
   var params = {screen_name: 'chrissgaona', count: 5};
-  client.get('statuses/user_timeline', params, function(error, tweets, response){
+  client.get('statuses/user_timeline', params, function(error, tweets, response) {
     var tweetsArray = [];
     var username;
 
@@ -25,7 +25,7 @@ router.get('/', function(req, res, next) {
       var tweetsObject;
       for (var i = 0; i < tweets.length; i++) {
         var date = tweets[i].created_at.split(' ');
-        console.log(date);
+        // console.log(date);
 
         if (tweets[i].retweeted_status !== undefined) {
         tweetsObject = {
@@ -35,7 +35,8 @@ router.get('/', function(req, res, next) {
           screen_name: tweets[i].user.screen_name,
           text: tweets[i].retweeted_status.text,
           retweet_count: tweets[i].retweeted_status.retweet_count,
-          favorite_count: tweets[i].retweeted_status.favorite_count
+          favorite_count: tweets[i].retweeted_status.favorite_count,
+          friends_count: tweets[i].user.friends_count
         };
       } else {
         tweetsObject = {
@@ -45,19 +46,58 @@ router.get('/', function(req, res, next) {
           screen_name: tweets[i].user.screen_name,
           text: tweets[i].text,
           retweet_count: tweets[i].retweet_count,
-          favorite_count: tweets[i].favorite_count
+          favorite_count: tweets[i].favorite_count,
+          friends_count: tweets[i].user.friends_count
         };
       }
         tweetsArray.push(tweetsObject);
       }
 
-      console.log(tweetsArray);
-      res.render('index', {
-        username: tweetsObject.screen_name,
-        tweets: tweetsArray
-      });
+      getFriends(tweetsObject, tweetsArray);
+
+      // console.log(tweetsArray);
     }
   });
+
+  function getFriends(tweetsObject, tweetsArray) {
+    client.get('friends/list', params, function(error, friends, response) {
+      var friendsArray = [];
+
+      if (!error) {
+        var friendsObject;
+        // console.log(friends);
+
+        for (var i = 0; i < friends.users.length; i++) {
+          friendsObject = {
+            profile_image: friends.users[i].profile_image_url_https,
+            name: friends.users[i].name,
+            screen_name: friends.users[i].screen_name
+          };
+          friendsArray.push(friendsObject);
+        }
+        console.log(friendsArray);
+      }
+      console.log('Following: ' + tweetsObject.friends_count);
+
+      // getMessages();
+
+      res.render('index', {
+        username: tweetsObject.screen_name,
+        following: tweetsObject.friends_count,
+        tweets: tweetsArray,
+        friends: friendsArray
+      });
+    });
+  }
+
+  // function getMessages() {
+  //   client.get('direct_messages', params, function(error, messages, response){
+  //     if (!error) {
+  //       console.log(messages);
+  //     }
+  //   });
+  // }
+
 });
 
 module.exports = router;
