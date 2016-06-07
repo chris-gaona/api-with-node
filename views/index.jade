@@ -126,22 +126,22 @@ block content
           li
             h3
               | Conversation with 
-              //- a #{recipient}
+              a #{recipient}
             |             
             ul.app--message--conversation
               each message in messages
                 if message.recipient
                   li.app--message
-                    .app--avatar(style='background-image: url(images/f-spore.png)')
-                      img(src='images/f-spore.png')
+                    .app--avatar(style='background-image: url(#{message.picture})')
+                      img(src='#{message.picture}')
                     |                 
                     p.app--message--text #{message.text}
                     |                 
                     p.app--message--timestamp #{message.date} 
                 else         
                   li.app--message--me
-                    .app--avatar(style='background-image: url(images/m-spore.png)')
-                      img(src='images/m-spore.png')
+                    .app--avatar(style='background-image: url(#{message.picture})')
+                      img(src='#{message.picture}')
                     |                 
                     p.app--message--text #{message.text}
                     |                 
