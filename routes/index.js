@@ -10,52 +10,6 @@ var client = new Twitter({
   access_token_secret: twitterKeys.access_token_secret
 });
 
-// function hoursBetween(date) {
-//   var todayDate = new Date();
-//   // The number of milliseconds in one day
-//   var oneHour = 3600000;
-//
-//   // Convert both dates to milliseconds
-//   var date1_ms = todayDate.getTime();
-//   var date2_ms = date.getTime();
-//
-//   // Calculate the difference in milliseconds
-//   var difference_ms = Math.round(date1_ms - date2_ms);
-//
-//   // Convert back to hours and return
-//   return Math.round(difference_ms/oneHour);
-// }
-
-// function daysBetween(date) {
-//   var todayDate = new Date();
-//   // The number of milliseconds in one day
-//   var ONE_DAY = 1000 * 60 * 60 * 24;
-//
-//   // Convert both dates to milliseconds
-//   var date1_ms = todayDate.getTime();
-//   var date2_ms = date.getTime();
-//
-//   // Calculate the difference in milliseconds
-//   var difference_ms = Math.round(date1_ms - date2_ms);
-//
-//   // Convert back to days and return
-//   return Math.round(difference_ms/ONE_DAY);
-// }
-//
-// function millisToMinutes(date) {
-//   var todayDate = new Date();
-//
-//   // Convert both dates to milliseconds
-//   var date1_ms = todayDate.getTime();
-//   var date2_ms = date.getTime();
-//
-//   // Calculate the difference in milliseconds
-//   var difference_ms = Math.round(date1_ms - date2_ms);
-//
-//   // Convert back to days and return
-//   return Math.round(difference_ms / 60000);
-// }
-
 function parseTwitterDate(tdate) {
   var system_date = new Date(Date.parse(tdate));
   var user_date = new Date();
@@ -76,6 +30,26 @@ function parseTwitterDate(tdate) {
   return splitDate[1] + ' ' + splitDate[2];
 }
 
+function parseTwitterDateTime(tdate) {
+    var system_date = new Date(Date.parse(tdate));
+    var user_date = new Date();
+    var splitDate = tdate.split(' ');
+
+    var diff = Math.floor((user_date - system_date) / 1000);
+    if (diff <= 1) {return "just now";}
+    if (diff < 60) {return diff + " seconds ago";}
+    // if (diff < 40) {return "half a minute ago";}
+    // if (diff < 60) {return "less than a minute ago";}
+    if (diff <= 90) {return "one minute ago";}
+    if (diff <= 3540) {return Math.round(diff / 60) + " minutes ago";}
+    if (diff <= 5400) {return "1 hour ago";}
+    if (diff <= 86400) {return Math.round(diff / 3600) + " hours ago";}
+    if (diff <= 129600) {return "1 day ago";}
+    if (diff < 604800) {return Math.round(diff / 86400) + " days ago";}
+    if (diff <= 777600) {return "1 week ago";}
+    return splitDate[1] + ' ' + splitDate[2];
+}
+
 /* GET home page. */
 router.get('/', function(req, res, next) {
   // res.render('index');
@@ -89,8 +63,7 @@ router.get('/', function(req, res, next) {
       var username;
 
       if (!error) {
-        // console.log(tweets);
-        // res.send(tweets);
+
         var todayDate = new Date();
 
         var tweetsObject;
@@ -99,18 +72,6 @@ router.get('/', function(req, res, next) {
           var splitDate = tweets[i].created_at.split(' ');
           var date = new Date(tweets[i].created_at);
           var getDate;
-
-          // console.log(parseTwitterDate(tweets[i].created_at));
-
-          // if (hoursBetween(date) < 1) {
-          //   getDate = millisToMinutes(date) + ' m';
-          // } else if (hoursBetween(date) < 24) {
-          //   getDate = hoursBetween(date) + ' h';
-          // } else {
-          //   getDate = splitDate[1] + ' ' + splitDate[2];
-          // }
-
-          // console.log(date);
 
           if (tweets[i].retweeted_status !== undefined) {
           tweetsObject = {
@@ -177,7 +138,6 @@ router.get('/', function(req, res, next) {
 
       if (!error) {
         var messagesReceivedObject;
-        // console.log(messages);
 
         for (var i = 0; i < messages.length; i++) {
           var date = messages[i].created_at.split(' ');
@@ -189,11 +149,10 @@ router.get('/', function(req, res, next) {
             name: messages[i].sender.name,
             picture: messages[i].sender.profile_image_url_https,
             created_at: messages[i].created_at,
-            date: parseTwitterDate(messageDate)
+            date: parseTwitterDateTime(messageDate)
           };
           messagesReceivedArray.push(messagesReceivedObject);
         }
-        // console.log(messagesReceivedArray);
 
         getSentMessages(tweetsObject, tweetsArray, friendsArray, messagesReceivedArray);
 
@@ -224,7 +183,7 @@ router.get('/', function(req, res, next) {
             name: messages[i].sender.name,
             picture: messages[i].sender.profile_image_url_https,
             created_at: messages[i].created_at,
-            date: parseTwitterDate(messageDate)
+            date: parseTwitterDateTime(messageDate)
           };
           messagesSentArray.push(messagesSentObject);
         }
