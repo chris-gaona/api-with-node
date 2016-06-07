@@ -34,23 +34,23 @@ var client = new Twitter({
   }
 
   function parseTwitterDateMessages(tdate) {
-      var system_date = new Date(Date.parse(tdate));
-      var user_date = new Date();
-      var splitDate = tdate.split(' ');
+    var system_date = new Date(Date.parse(tdate));
+    var user_date = new Date();
+    var splitDate = tdate.split(' ');
 
-      var diff = Math.floor((user_date - system_date) / 1000);
-      if (diff <= 1) {return "just now";}
-      if (diff < 60) {return diff + " seconds ago";}
-      // if (diff < 40) {return "half a minute ago";}
-      // if (diff < 60) {return "less than a minute ago";}
-      if (diff <= 90) {return "one minute ago";}
-      if (diff <= 3540) {return Math.round(diff / 60) + " minutes ago";}
-      if (diff <= 5400) {return "1 hour ago";}
-      if (diff <= 86400) {return Math.round(diff / 3600) + " hours ago";}
-      if (diff <= 129600) {return "1 day ago";}
-      if (diff < 604800) {return Math.round(diff / 86400) + " days ago";}
-      if (diff <= 777600) {return "1 week ago";}
-      return splitDate[1] + ' ' + splitDate[2];
+    var diff = Math.floor((user_date - system_date) / 1000);
+    if (diff <= 1) {return "just now";}
+    if (diff < 60) {return diff + " seconds ago";}
+    // if (diff < 40) {return "half a minute ago";}
+    // if (diff < 60) {return "less than a minute ago";}
+    if (diff <= 90) {return "one minute ago";}
+    if (diff <= 3540) {return Math.round(diff / 60) + " minutes ago";}
+    if (diff <= 5400) {return "1 hour ago";}
+    if (diff <= 86400) {return Math.round(diff / 3600) + " hours ago";}
+    if (diff <= 129600) {return "1 day ago";}
+    if (diff < 604800) {return Math.round(diff / 86400) + " days ago";}
+    if (diff <= 777600) {return "1 week ago";}
+    return splitDate[1] + ' ' + splitDate[2];
   }
 
   /* GET home page. */
@@ -64,6 +64,10 @@ var client = new Twitter({
       client.get('statuses/user_timeline', params, function(error, tweets, response) {
         var tweetsArray = [];
         var username;
+        var profileImage;
+        var backgroundImage;
+
+        console.log(tweets);
 
         if (!error) {
 
@@ -75,6 +79,8 @@ var client = new Twitter({
             var splitDate = tweets[i].created_at.split(' ');
             var date = new Date(tweets[i].created_at);
             var getDate;
+            profileImage = tweets[i].user.profile_image_url_https;
+            backgroundImage = tweets[i].user.profile_banner_url;
 
             if (tweets[i].retweeted_status !== undefined) {
             tweetsObject = {
@@ -102,7 +108,7 @@ var client = new Twitter({
             tweetsArray.push(tweetsObject);
           }
 
-          getFriends(tweetsObject, tweetsArray);
+          getFriends(tweetsObject, tweetsArray, profileImage, backgroundImage);
 
         } else {
           console.log(error);
@@ -110,7 +116,7 @@ var client = new Twitter({
       });
     } // getTimelineInfo()
 
-    function getFriends(tweetsObject, tweetsArray) {
+    function getFriends(tweetsObject, tweetsArray, profileImage, backgroundImage) {
       client.get('friends/list', params, function(error, friends, response) {
         var friendsArray = [];
 
@@ -128,14 +134,14 @@ var client = new Twitter({
           }
           // console.log(friendsArray);
 
-          getReceivedMessages(tweetsObject, tweetsArray, friendsArray);
+          getReceivedMessages(tweetsObject, tweetsArray, profileImage, backgroundImage, friendsArray);
         } else {
           console.log(error);
         }
       });
     } //getFriends()
 
-    function getReceivedMessages(tweetsObject, tweetsArray, friendsArray) {
+    function getReceivedMessages(tweetsObject, tweetsArray, profileImage, backgroundImage, friendsArray) {
       client.get('direct_messages', params, function(error, messages, response){
         var messagesReceivedArray = [];
         var recipientName = [];
@@ -166,7 +172,7 @@ var client = new Twitter({
             messagesReceivedArray.push(messagesReceivedObject);
           }
 
-          getSentMessages(tweetsObject, tweetsArray, friendsArray, messagesReceivedArray, recipientName);
+          getSentMessages(tweetsObject, tweetsArray, profileImage, backgroundImage, friendsArray, messagesReceivedArray, recipientName);
 
         } else {
           console.log(error);
@@ -174,7 +180,7 @@ var client = new Twitter({
       });
     } //getReceivedMessages()
 
-    function getSentMessages(tweetsObject, tweetsArray, friendsArray, messagesReceivedArray, recipientName) {
+    function getSentMessages(tweetsObject, tweetsArray, profileImage, backgroundImage, friendsArray, messagesReceivedArray, recipientName) {
       client.get('direct_messages/sent', params, function(error, messages, response){
 
         var messagesSentArray = [];
@@ -231,10 +237,21 @@ var client = new Twitter({
           tweets: tweetsArray,
           friends: friendsArray,
           messages: allMessages,
-          recipient: recipName
+          recipient: recipName,
+          image: profileImage,
+          background: backgroundImage
         });
       });
     } // getSentMessages()
+
+    function postNewTweet() {
+      var tweetParams = {status: ''};
+      client.post('statuses/update', tweetParams, function(error, tweetParams, response){
+        if (!error) {
+          console.log(tweets);
+        }
+      });
+    }
 
   }); // router.get()
 })(); // wrapper function to remove global variables

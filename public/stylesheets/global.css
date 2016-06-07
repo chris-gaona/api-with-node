@@ -1454,6 +1454,11 @@ li:only-child .circle--clone--remove {
   padding: 20px 0;
   margin-bottom: 30px;
 }
+.circle--header {
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+}
 /* line 2, ../sass/circle/core/_mixins.sass */
 .circle--header:before, .circle--header:after {
   content: " ";
