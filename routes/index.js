@@ -138,6 +138,7 @@ var client = new Twitter({
     function getReceivedMessages(tweetsObject, tweetsArray, friendsArray) {
       client.get('direct_messages', params, function(error, messages, response){
         var messagesReceivedArray = [];
+        var recipientName = [];
 
         if (!error) {
           var messagesReceivedObject;
@@ -145,6 +146,14 @@ var client = new Twitter({
           for (var i = 0; i < messages.length; i++) {
             var date = messages[i].created_at.split(' ');
             var messageDate = messages[i].created_at;
+
+            var recName = messages[i].sender.name;
+
+            if (recipientName.indexOf(recName) === -1) {
+              recipientName.push(messages[i].sender.name);
+            } else {
+              console.log('Already there!');
+            }
 
             messagesReceivedObject = {
               recipient: true,
@@ -157,7 +166,7 @@ var client = new Twitter({
             messagesReceivedArray.push(messagesReceivedObject);
           }
 
-          getSentMessages(tweetsObject, tweetsArray, friendsArray, messagesReceivedArray);
+          getSentMessages(tweetsObject, tweetsArray, friendsArray, messagesReceivedArray, recipientName);
 
         } else {
           console.log(error);
@@ -165,12 +174,11 @@ var client = new Twitter({
       });
     } //getReceivedMessages()
 
-    function getSentMessages(tweetsObject, tweetsArray, friendsArray, messagesReceivedArray) {
+    function getSentMessages(tweetsObject, tweetsArray, friendsArray, messagesReceivedArray, recipientName) {
       client.get('direct_messages/sent', params, function(error, messages, response){
 
         var messagesSentArray = [];
         var allMessages;
-        var recipientName;
 
         if (!error) {
           var messagesSentObject;
@@ -178,7 +186,6 @@ var client = new Twitter({
           for (var i = 0; i < messages.length; i++) {
             var date = messages[i].created_at.split(' ');
             var messageDate = messages[i].created_at;
-            recipientName = messages[i].recipient.name;
 
             messagesSentObject = {
               recipient: false,
@@ -206,13 +213,25 @@ var client = new Twitter({
           console.log(error);
         }
 
+        var recipName;
+
+        if (recipientName.length === 1) {
+          recipName = recipientName[0];
+        } else if (recipientName.length === 2) {
+          recipName = recipientName[0] + ', ' + recipientName[1];
+        } else if (recipientName.length === 3) {
+          recipName = recipientName[0] + ', ' + recipientName[1] + ', ' + recipientName[2];
+        } else if (recipientName.length === 4) {
+          recipName = recipientName[0] + ', ' + recipientName[1] + ', ' + recipientName[2] + ', ' + recipientName[3];
+        }
+
         res.render('index', {
           username: tweetsObject.screen_name,
           following: tweetsObject.friends_count,
           tweets: tweetsArray,
           friends: friendsArray,
           messages: allMessages,
-          recipient: recipientName
+          recipient: recipName
         });
       });
     } // getSentMessages()
