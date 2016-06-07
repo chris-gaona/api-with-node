@@ -28,7 +28,7 @@ block content
           .app--avatar(style='background-image: url(images/m-spore.png)')
             img(src='images/m-spore.png')
           |           
-          textarea#tweet-textarea.circle--textarea--input(placeholder="What's happening?")
+          textarea#tweet-textarea.circle--textarea--input(placeholder="What's happening?" maxlength="140")
           |           
           strong#tweet-char.app--tweet--char 140
         |         
@@ -146,11 +146,6 @@ block content
                     p.app--message--text #{message.text}
                     |                 
                     p.app--message--timestamp #{message.date}
-                  //- |               
-                  //- li.app--message
-                  //-   .app--avatar(style='background-image: url(public/images/f-spore.png)')
-                  //-     img(src='public/images/f-spore.png')
-                  //-   |                 
-                  //-   p.app--message--text Fantastic! You wanna grab lunch?
-                  //-   |                 
-                  //-   p.app--message--timestamp 2 hours ago
+                    
+  script(src='https://ajax.googleapis.com/ajax/libs/jquery/2.2.2/jquery.min.js')
+  script(src="javascripts/main.js")
