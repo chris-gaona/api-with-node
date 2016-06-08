@@ -61,13 +61,12 @@ var client = new Twitter({
     getTimelineInfo();
 
     function getTimelineInfo() {
+
       client.get('statuses/user_timeline', params, function(error, tweets, response) {
         var tweetsArray = [];
         var username;
         var profileImage;
         var backgroundImage;
-
-        console.log(tweets);
 
         if (!error) {
 
@@ -244,16 +243,60 @@ var client = new Twitter({
       });
     } // getSentMessages()
 
+  }); // router.get()
+
+  router.post('/tweet', function(req, res, next) {
+    var statusText = req.body.tweet;
+    console.log(statusText);
+    // res.json({
+    //   "success": true,
+    //   "name": "Chris Gaona",
+    //   "username": "chrissgaona",
+    //   "text": statusText,
+    //   "retweet": 5,
+    //   "like": 20,
+    //   "image": "https://pbs.twimg.com/profile_images/413362897360650240/0z2igJqN_normal.jpeg"
+    // });
+
+    // client.stream('statuses/filter', {follow: '2252277176'}, function(stream) {
+    //   stream.on('data', function(tweet) {
+    //     console.log(tweet.text);
+    //     postNewTweet();
+    //   });
+    //
+    //   stream.on('error', function(error) {
+    //     throw error;
+    //   });
+    // });
+
     function postNewTweet() {
-      var tweetParams = {status: ''};
-      client.post('statuses/update', tweetParams, function(error, tweetParams, response){
+      var tweetParams = {status: statusText};
+      client.post('statuses/update', tweetParams, function(error, tweet, response){
         if (!error) {
-          console.log(tweets);
+          console.log(tweet);
+          res.json({
+            "success": true,
+            "name": tweet.user.name,
+            "username": tweet.user.screen_name,
+            "text": tweet.text,
+            "retweet": tweet.retweet_count,
+            "like": 0,
+            "image": tweet.user.profile_image_url_https
+          });
+          // res.send('Successfully tweeted!');
+        } else {
+          console.log(error);
+          res.json({
+            "message": "There was an error!",
+            "errorMessage": error
+          });
         }
       });
-    }
+    } // postNewTweet()
 
-  }); // router.get()
+    postNewTweet();
+  }); // router.post()
+
 })(); // wrapper function to remove global variables
 
 module.exports = router;
