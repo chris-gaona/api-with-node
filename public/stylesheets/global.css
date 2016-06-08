@@ -2355,7 +2355,7 @@ a:hover .app--avatar {
   color: #1da1f2;
 }
 /* line 170, ../sass/global.sass */
-.app--tweet--actions a:hover svg, .app--user--actions a:hover svg {
+.app--tweet--actions a:hover svg, .app--user--actions a:hover svg, .app--tweet--actions a:hover img{
   fill: #1da1f2;
 }
 /* line 172, ../sass/global.sass */
@@ -2364,7 +2364,7 @@ a:hover .app--avatar {
   opacity: 1;
 }
 /* line 175, ../sass/global.sass */
-.app--tweet--actions a svg, .app--user--actions a svg {
+.app--tweet--actions a svg, .app--user--actions a svg, .app--tweet--actions a img  {
   height: 13px;
   width: auto;
   fill: #c6e7fc;
