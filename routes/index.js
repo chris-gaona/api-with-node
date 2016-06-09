@@ -212,34 +212,35 @@ var client = new Twitter({
             if(keyA < keyB) return 1;
             if(keyA > keyB) return -1;
             return 0;
-        });
+          });
+
+          var recipName;
+
+          if (recipientName.length === 1) {
+            recipName = recipientName[0];
+          } else if (recipientName.length === 2) {
+            recipName = recipientName[0] + ', ' + recipientName[1];
+          } else if (recipientName.length === 3) {
+            recipName = recipientName[0] + ', ' + recipientName[1] + ', ' + recipientName[2];
+          } else if (recipientName.length === 4) {
+            recipName = recipientName[0] + ', ' + recipientName[1] + ', ' + recipientName[2] + ', ' + recipientName[3];
+          }
+
+          res.render('index', {
+            username: tweetsObject.screen_name,
+            following: tweetsObject.friends_count,
+            tweets: tweetsArray,
+            friends: friendsArray,
+            messages: allMessages,
+            recipient: recipName,
+            image: profileImage,
+            background: backgroundImage
+          });
 
         } else {
           console.log(error);
         }
 
-        var recipName;
-
-        if (recipientName.length === 1) {
-          recipName = recipientName[0];
-        } else if (recipientName.length === 2) {
-          recipName = recipientName[0] + ', ' + recipientName[1];
-        } else if (recipientName.length === 3) {
-          recipName = recipientName[0] + ', ' + recipientName[1] + ', ' + recipientName[2];
-        } else if (recipientName.length === 4) {
-          recipName = recipientName[0] + ', ' + recipientName[1] + ', ' + recipientName[2] + ', ' + recipientName[3];
-        }
-
-        res.render('index', {
-          username: tweetsObject.screen_name,
-          following: tweetsObject.friends_count,
-          tweets: tweetsArray,
-          friends: friendsArray,
-          messages: allMessages,
-          recipient: recipName,
-          image: profileImage,
-          background: backgroundImage
-        });
       });
     } // getSentMessages()
 
@@ -283,7 +284,7 @@ var client = new Twitter({
             "like": 0,
             "image": tweet.user.profile_image_url_https
           });
-          // res.send('Successfully tweeted!');
+
         } else {
           console.log(error);
           res.json({
