@@ -1,5 +1,5 @@
 // call modules assign them to variables
-var express = require('express');
+var express = require('express')
 var router = express.Router();
 // Twitter module to make Twitter api requests
 var Twitter = require('twitter');
