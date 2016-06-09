@@ -1,8 +1,12 @@
+// call modules assign them to variables
 var express = require('express');
 var router = express.Router();
+// Twitter module to make Twitter api requests
 var Twitter = require('twitter');
+// adds twitter keys from external file
 var twitterKeys = require('../../twitter-config.json');
 
+// defines client object for Twitter module
 var client = new Twitter({
   consumer_key: twitterKeys.consumer_key,
   consumer_secret: twitterKeys.consumer_secret,
@@ -13,77 +17,89 @@ var client = new Twitter({
 (function() {
   'use strict';
 
-  function parseTwitterDate(tdate) {
+  // function to parse dates from twitter for timeline
+  // && direct messages
+  function parseTwitterDate(tdate, booleanValue) {
+    // parses a string representation of a date, &
+    // returns the number of milliseconds since
+    // January 1, 1970
     var system_date = new Date(Date.parse(tdate));
+    // gets today's date
     var user_date = new Date();
+    // splits tdate string at space into array with
+    // each word
     var splitDate = tdate.split(' ');
-
+    // gets difference between twitter date & user date
+    // divide the value by 1000 to change milliseconds
+    // into seconds
     var diff = Math.floor((user_date - system_date) / 1000);
-    if (diff <= 1) {return "just now";}
-    if (diff < 60) {return diff + "s";}
-    // if (diff < 40) {return "half a minute ago";}
-    // if (diff < 60) {return "less than a minute ago";}
-    if (diff <= 90) {return "1m";}
-    if (diff <= 3540) {return Math.round(diff / 60) + "m";}
-    if (diff <= 5400) {return "1h";}
-    if (diff <= 86400) {return Math.round(diff / 3600) + "h";}
-    if (diff <= 129600) {return "1d";}
-    if (diff < 604800) {return Math.round(diff / 86400) + "d";}
-    if (diff <= 777600) {return "1w";}
-    return splitDate[1] + ' ' + splitDate[2];
-  }
 
-  function parseTwitterDateMessages(tdate) {
-    var system_date = new Date(Date.parse(tdate));
-    var user_date = new Date();
-    var splitDate = tdate.split(' ');
-
-    var diff = Math.floor((user_date - system_date) / 1000);
+    // adds text depending on how many seconds the diff is
+    // booleanValue is used to deterime to put text in
+    // timeline section or direct messages section
     if (diff <= 1) {return "just now";}
-    if (diff < 60) {return diff + " seconds ago";}
-    // if (diff < 40) {return "half a minute ago";}
-    // if (diff < 60) {return "less than a minute ago";}
-    if (diff <= 90) {return "one minute ago";}
-    if (diff <= 3540) {return Math.round(diff / 60) + " minutes ago";}
-    if (diff <= 5400) {return "1 hour ago";}
-    if (diff <= 86400) {return Math.round(diff / 3600) + " hours ago";}
-    if (diff <= 129600) {return "1 day ago";}
-    if (diff < 604800) {return Math.round(diff / 86400) + " days ago";}
-    if (diff <= 777600) {return "1 week ago";}
+
+    if (diff < 60 && booleanValue === true) {return diff + "s";}
+    if (diff < 60 && booleanValue === false) {return diff + " seconds ago";}
+
+    if (diff <= 90 && booleanValue === true) {return "1m";}
+    if (diff <= 90 && booleanValue === false) {return "one minute ago";}
+
+    if (diff <= 3540 && booleanValue === true) {return Math.round(diff / 60) + "m";}
+    if (diff <= 3540 && booleanValue === false) {return Math.round(diff / 60) + " minutes ago";}
+
+    if (diff <= 5400 && booleanValue === true) {return "1h";}
+    if (diff <= 5400 && booleanValue === false) {return "1 hour ago";}
+
+    if (diff <= 86400 && booleanValue === true) {return Math.round(diff / 3600) + "h";}
+    if (diff <= 86400 && booleanValue === false) {return Math.round(diff / 3600) + " hours ago";}
+
+    if (diff <= 129600 && booleanValue === true) {return "1d";}
+    if (diff <= 129600 && booleanValue === false) {return "1 day ago";}
+
+    if (diff < 604800 && booleanValue === true) {return Math.round(diff / 86400) + "d";}
+    if (diff < 604800 && booleanValue === false) {return Math.round(diff / 86400) + " days ago";}
+
+    if (diff <= 777600 && booleanValue === true) {return "1w";}
+    if (diff <= 777600 && booleanValue === false) {return "1 week ago";}
+
+    // if none of the above return true show actual date
     return splitDate[1] + ' ' + splitDate[2];
   }
 
   /* GET home page. */
   router.get('/', function(req, res, next) {
-    // res.render('index');
+    // define params variable for twitter module
     var params = {screen_name: 'chrissgaona', count: 5};
 
     getTimelineInfo();
 
+    // creates getTimelineInfo function
     function getTimelineInfo() {
 
+      // uses Twitter module to get timeline info
+      // passing in params for get request to twitter API
       client.get('statuses/user_timeline', params, function(error, tweets, response) {
+        //defines needed variables
         var tweetsArray = [];
-        var username;
         var profileImage;
         var backgroundImage;
 
+        //if there is no error
         if (!error) {
-
-          var todayDate = new Date();
-
           var tweetsObject;
 
+          // creates for loop through tweets response from
+          // twitter API
           for (var i = 0; i < tweets.length; i++) {
-            var splitDate = tweets[i].created_at.split(' ');
-            var date = new Date(tweets[i].created_at);
-            var getDate;
             profileImage = tweets[i].user.profile_image_url_https;
             backgroundImage = tweets[i].user.profile_banner_url;
 
+            // if tweet has been retweeted use the following
+            // object
             if (tweets[i].retweeted_status !== undefined) {
             tweetsObject = {
-              created_at: parseTwitterDate(tweets[i].created_at),
+              created_at: parseTwitterDate(tweets[i].created_at, true),
               profile_image: tweets[i].user.profile_image_url_https,
               name: tweets[i].user.name,
               screen_name: tweets[i].user.screen_name,
@@ -92,9 +108,12 @@ var client = new Twitter({
               favorite_count: tweets[i].retweeted_status.favorite_count,
               friends_count: tweets[i].user.friends_count
             };
+
+          // else if tweet has NOT been retweeted use
+          // the following object
           } else {
             tweetsObject = {
-              created_at: parseTwitterDate(tweets[i].created_at),
+              created_at: parseTwitterDate(tweets[i].created_at, true),
               profile_image: tweets[i].user.profile_image_url_https,
               name: tweets[i].user.name,
               screen_name: tweets[i].user.screen_name,
@@ -104,12 +123,16 @@ var client = new Twitter({
               friends_count: tweets[i].user.friends_count
             };
           }
+            // push the object to tweetsArray
             tweetsArray.push(tweetsObject);
           }
 
+          // calls getFriends function & passes in needed
+          // variables as parameters
           getFriends(tweetsObject, tweetsArray, profileImage, backgroundImage);
 
         } else {
+          // else if error log it
           console.log(error);
         }
       });
@@ -149,7 +172,6 @@ var client = new Twitter({
           var messagesReceivedObject;
 
           for (var i = 0; i < messages.length; i++) {
-            var date = messages[i].created_at.split(' ');
             var messageDate = messages[i].created_at;
 
             var recName = messages[i].sender.name;
@@ -166,7 +188,7 @@ var client = new Twitter({
               name: messages[i].sender.name,
               picture: messages[i].sender.profile_image_url_https,
               created_at: messages[i].created_at,
-              date: parseTwitterDateMessages(messageDate)
+              date: parseTwitterDate(messageDate, false)
             };
             messagesReceivedArray.push(messagesReceivedObject);
           }
@@ -189,7 +211,6 @@ var client = new Twitter({
           var messagesSentObject;
 
           for (var i = 0; i < messages.length; i++) {
-            var date = messages[i].created_at.split(' ');
             var messageDate = messages[i].created_at;
 
             messagesSentObject = {
@@ -198,7 +219,7 @@ var client = new Twitter({
               name: messages[i].sender.name,
               picture: messages[i].sender.profile_image_url_https,
               created_at: messages[i].created_at,
-              date: parseTwitterDateMessages(messageDate)
+              date: parseTwitterDate(messageDate, false)
             };
             messagesSentArray.push(messagesSentObject);
           }
@@ -248,27 +269,6 @@ var client = new Twitter({
 
   router.post('/tweet', function(req, res, next) {
     var statusText = req.body.tweet;
-    console.log(statusText);
-    // res.json({
-    //   "success": true,
-    //   "name": "Chris Gaona",
-    //   "username": "chrissgaona",
-    //   "text": statusText,
-    //   "retweet": 5,
-    //   "like": 20,
-    //   "image": "https://pbs.twimg.com/profile_images/413362897360650240/0z2igJqN_normal.jpeg"
-    // });
-
-    // client.stream('statuses/filter', {follow: '2252277176'}, function(stream) {
-    //   stream.on('data', function(tweet) {
-    //     console.log(tweet.text);
-    //     postNewTweet();
-    //   });
-    //
-    //   stream.on('error', function(error) {
-    //     throw error;
-    //   });
-    // });
 
     function postNewTweet() {
       var tweetParams = {status: statusText};
