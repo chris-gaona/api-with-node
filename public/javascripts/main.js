@@ -56,6 +56,7 @@ $(function () {
       },
       error: function () {
         // show error message
+        console.log('There was an error!');
 
       } // error function
     }); // end $.ajax

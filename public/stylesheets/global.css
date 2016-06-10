@@ -2514,3 +2514,8 @@ input[type="button"] {
 #error-message, #error-status, #error-text {
   text-align: center;
 }
+
+#cat {
+  max-width: 300px;
+  margin: 0 auto;
+}
