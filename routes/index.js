@@ -65,6 +65,44 @@ function parseTwitterDate (tdate, booleanValue) {
   return splitDate[1] + ' ' + splitDate[2];
 }
 
+router.get('/stream-tweets', function (req, res, next) {
+  console.log('Running stream!');
+  var tweetsArray = [];
+  client.stream('statuses/filter', { follow: '2252277176' }, function (stream) {
+    stream.on('data', function (tweet) {
+      console.log(tweet.text);
+
+      if (tweet.retweeted_status !== undefined) {
+        res.json({
+          'success': true,
+          'name': tweet.user.name,
+          'username': tweet.user.screen_name,
+          'text': tweet.text,
+          'retweet': tweet.retweeted_status.retweet_count,
+          'like': tweet.retweeted_status.favorite_count,
+          'image': tweet.user.profile_image_url_https,
+          'date': parseTwitterDate(tweet.created_at, true)
+        });
+      } else {
+        res.json({
+          'success': true,
+          'name': tweet.user.name,
+          'username': tweet.user.screen_name,
+          'text': tweet.text,
+          'retweet': tweet.retweet_count,
+          'like': tweet.favorite_count,
+          'image': tweet.user.profile_image_url_https,
+          'date': parseTwitterDate(tweet.created_at, true)
+        });
+      }
+    });
+    stream.on('error', function (error) {
+      console.log(error);
+      throw error;
+    });
+  });
+});
+
 /* GET home page. */
 router.get('/', function (req, res, next) {
   // define params variable for twitter module
@@ -267,13 +305,8 @@ router.post('/tweet', function (req, res, next) {
       if (!error) {
         console.log(tweet);
         res.json({
-          'success': true,
-          'name': tweet.user.name,
-          'username': tweet.user.screen_name,
-          'text': tweet.text,
-          'retweet': tweet.retweet_count,
-          'like': 0,
-          'image': tweet.user.profile_image_url_https
+          'message': 'Successfully sent tweet!',
+          'title': tweet.title
         });
       } else {
         console.log(error);

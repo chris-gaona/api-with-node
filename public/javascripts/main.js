@@ -9,6 +9,33 @@ $(function () {
     countChar($(this).val().length);
   });
 
+  function getTweetSteam () {
+    $.ajax({
+      type: 'GET',
+      url: '/stream-tweets',
+      success: function (response) {
+        if (response) {
+          var prependText = '<li><strong class="app--tweet--timestamp">' + response.date + '</strong><a class="app--tweet--author"><div class="app--avatar" style="background-image: url(' + response.image + ')"><img src="' + response.image + '"></div><h4>' + response.name + '</h4> @' + response.username + '</a><p>' + response.text + '</p><ul class="app--tweet--actions circle--list--inline"><li><a class="app--reply"><span class="tooltip">Reply</span><img class="inject-me" src="images/reply.svg"></a></li><li><a class="app--repeat"><span class="tooltip">Retweet</span><img class="inject-me" src="images/retweet.svg"><strong>' + ' ' + response.retweet + '</strong></a></li><li><a class="app--like"><span class="tooltip">Like</span><img class="inject-me" src="images/like.svg"><strong>' + ' ' + response.like + '</strong></a></li></ul></li>';
+
+          $('ul.app--tweet--list').prepend(prependText);
+
+          // Elements to inject
+          var mySVGsToInject = document.querySelectorAll('img.inject-me');
+
+          // Do the injection
+          SVGInjector(mySVGsToInject);
+        } else {
+
+        }
+      },
+      error: function (error) {
+        console.log(error);
+      }
+    });
+  } // getTweetSteam()
+
+  getTweetSteam();
+
   $('button.button-primary').on('click', function () {
     var tweetText = $('#tweet-textarea').val();
 
@@ -21,16 +48,6 @@ $(function () {
         // if there is a response on the ajax request
         if (response) {
           console.log(response);
-
-          var prependText = '<li><strong class="app--tweet--timestamp">Just Now</strong><a class="app--tweet--author"><div class="app--avatar" style="background-image: url(' + response.image + ')"><img src="' + response.image + '"></div><h4>' + response.name + '</h4> @' + response.username + '</a><p>' + response.text + '</p><ul class="app--tweet--actions circle--list--inline"><li><a class="app--reply"><span class="tooltip">Reply</span><img class="inject-me" src="images/reply.svg"></a></li><li><a class="app--repeat"><span class="tooltip">Retweet</span><img class="inject-me" src="images/retweet.svg"><strong>' + ' ' + response.retweet + '</strong></a></li><li><a class="app--like"><span class="tooltip">Like</span><img class="inject-me" src="images/like.svg"><strong>' + ' ' + response.like + '</strong></a></li></ul></li>';
-
-          $('ul.app--tweet--list').prepend(prependText);
-
-          // Elements to inject
-          var mySVGsToInject = document.querySelectorAll('img.inject-me');
-
-          // Do the injection
-          SVGInjector(mySVGsToInject);
 
           $('#tweet-textarea').val('');
         } else {
