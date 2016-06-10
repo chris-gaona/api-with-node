@@ -1,24 +1,24 @@
-$(function() {
+$(function () {
   'use strict';
 
-  function countChar(val) {
+  function countChar (val) {
     $('#tweet-char').text(140 - val);
   }
 
-  $('#tweet-textarea').on('keyup', function() {
+  $('#tweet-textarea').on('keyup', function () {
     countChar($(this).val().length);
   });
 
-  $('button.button-primary').on('click', function() {
+  $('button.button-primary').on('click', function () {
     var tweetText = $('#tweet-textarea').val();
 
     $.ajax({
-      type: "POST",
-      url: "/tweet",
+      type: 'POST',
+      url: '/tweet',
       timeout: 2000,
       data: {tweet: tweetText},
-      success: function(response) {
-        //if there is a response on the ajax request
+      success: function (response) {
+        // if there is a response on the ajax request
         if (response) {
           console.log(response);
 
@@ -33,21 +33,17 @@ $(function() {
           SVGInjector(mySVGsToInject);
 
           $('#tweet-textarea').val('');
-
         } else {
           console.warn('there was an issue');
-        } //if statement
-
+        } // if statement
       },
-      error: function() {
-        //show error message
+      error: function () {
+        // show error message
 
-      } //error function
-    }); //end $.ajax
+      } // error function
+    }); // end $.ajax
 
-    //Very important line, it disables the page refresh.
+    // Very important line, it disables the page refresh.
     return false;
-
   });
-
 });
