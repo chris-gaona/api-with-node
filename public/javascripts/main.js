@@ -15,7 +15,7 @@ $(function () {
 
   // function to get the tweet stream results & add new
   // tweet without refreshing the page
-  function getTweetSteam () {
+  function getTweetStream () {
     // ajax request to get stream data
     $.ajax({
       type: 'GET',
@@ -47,9 +47,9 @@ $(function () {
         console.log(error);
       }
     });
-  } // getTweetSteam()
+  } // getTweetStream()
 
-  getTweetSteam();
+  getTweetStream();
 
   // on click of tweet button on app
   $('button.button-primary').on('click', function () {

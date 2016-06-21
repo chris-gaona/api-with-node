@@ -100,35 +100,32 @@ router.get('/stream-tweets', function (req, res, next) {
   client.stream('statuses/filter', { follow: '2252277176' }, function (stream) {
     // on receiving the data do the following
     stream.on('data', function (tweet) {
-      res.writeHead(200, {"Content-Type": "application/json"});
+      console.log(tweet);
 
-      var retweeted = {
-        'success': true,
-        'name': tweet.user.name,
-        'username': tweet.user.screen_name,
-        'text': tweet.text,
-        'retweet': tweet.retweeted_status.retweet_count,
-        'like': tweet.retweeted_status.favorite_count,
-        'image': tweet.user.profile_image_url_https,
-        'date': parseTwitterDate(tweet.created_at, true)
-      };
-
-      var notRetweeted = {
-        'success': true,
-        'name': tweet.user.name,
-        'username': tweet.user.screen_name,
-        'text': tweet.text,
-        'retweet': tweet.retweet_count,
-        'like': tweet.favorite_count,
-        'image': tweet.user.profile_image_url_https,
-        'date': parseTwitterDate(tweet.created_at, true)
-      };
       // if the tweet has been retweeted use this object
       if (tweet.retweeted_status !== undefined) {
-        res.write(JSON.stringify(retweeted));
+        res.json({
+          'success': true,
+          'name': tweet.user.name,
+          'username': tweet.user.screen_name,
+          'text': tweet.text,
+          'retweet': tweet.retweeted_status.retweet_count,
+          'like': tweet.retweeted_status.favorite_count,
+          'image': tweet.user.profile_image_url_https,
+          'date': parseTwitterDate(tweet.created_at, true)
+        });
       // else if it's a new tweet use this object
       } else {
-        res.write(JSON.stringify(notRetweeted));
+        res.json({
+          'success': true,
+          'name': tweet.user.name,
+          'username': tweet.user.screen_name,
+          'text': tweet.text,
+          'retweet': tweet.retweet_count,
+          'like': tweet.favorite_count,
+          'image': tweet.user.profile_image_url_https,
+          'date': parseTwitterDate(tweet.created_at, true)
+        });
       } // if statement
     }); // on data
     // on stream error log the error
@@ -144,51 +141,55 @@ var params = {screen_name: 'chrissgaona', count: 5};
 
 /* GET home page. */
 router.get('/', function (req, res, next) {
-  // getTimelineInfo(res);
-
   async.parallel([
-      myFirstFunction,
-      mySecondFunction,
-      myThirdFunction,
-      myFourthFunction
+      getUserTimeline,
+      getUserFriends,
+      getMessagesReceived,
+      getMessagesSent
   ], function (err, results) {
-      var messagesReceivedArray = getReceivedMessagesTest(results[2]).messagesReceivedArray;
-      var recipientName = getReceivedMessagesTest(results[2]).recipientName;
-      var allMessages = getSentMessagesTest(results[3], messagesReceivedArray, recipientName).allMessages;
-      var recipName = getSentMessagesTest(results[3], messagesReceivedArray, recipientName).recipName;
+    var username = getTimelineInfoTest(results[0]).tweetsObject.screen_name,
+    following = getTimelineInfoTest(results[0]).tweetsObject.friends_count,
+    tweets = getTimelineInfoTest(results[0]).tweets,
+    friends = getFriendsTest(results[1]),
+    messagesReceivedArray = getReceivedMessagesTest(results[2]).messagesReceivedArray,
+    recipientName = getReceivedMessagesTest(results[2]).recipientName,
+    allMessages = getSentMessagesTest(results[3], messagesReceivedArray, recipientName).allMessages,
+    recipName = getSentMessagesTest(results[3], messagesReceivedArray, recipientName).recipName,
+    profileImage = getTimelineInfoTest(results[0]).profileImage,
+    backgroundImage = getTimelineInfoTest(results[0]).backgroundImage;
 
-      res.render('index', {
-        username: getTimelineInfoTest(results[0]).tweetsObject.screen_name,
-        following: getTimelineInfoTest(results[0]).tweetsObject.friends_count,
-        tweets: getTimelineInfoTest(results[0]).tweets,
-        friends: getFriendsTest(results[1]),
-        messages: allMessages,
-        recipient: recipName,
-        image: getTimelineInfoTest(results[0]).profileImage,
-        background: getTimelineInfoTest(results[0]).backgroundImage
-      });
+    res.render('index', {
+      username: username,
+      following: following,
+      tweets: tweets,
+      friends: friends,
+      messages: allMessages,
+      recipient: recipName,
+      image: profileImage,
+      background: backgroundImage
+    });
   });
 }); // router.get()
 
-function myFirstFunction(callback) {
+function getUserTimeline(callback) {
   client.get('statuses/user_timeline', params, function (error, tweets, response) {
     if(error) { console.log(error); callback(true); return; }
     callback(null, tweets);
   });
 }
-function mySecondFunction(callback) {
+function getUserFriends(callback) {
   client.get('friends/list', params, function (error, friends, response) {
     if(error) { console.log(error); callback(true); return; }
     callback(null, friends);
   });
 }
-function myThirdFunction(callback) {
+function getMessagesReceived(callback) {
   client.get('direct_messages', params, function (error, messages, response) {
     if(error) { console.log(error); callback(true); return; }
     callback(null, messages);
   });
 }
-function myFourthFunction(callback) {
+function getMessagesSent(callback) {
   client.get('direct_messages/sent', params, function (error, messagesSent, response) {
     if(error) { console.log(error); callback(true); return; }
     callback(null, messagesSent);
