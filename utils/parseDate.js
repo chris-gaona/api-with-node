@@ -1,14 +1,17 @@
+/** A module. Its name is module:router.
+ * @module parseDate
+ */
+
 'use strict';
 
 /**
-* Parses dates from twitter for timeline & direct
-* messages
-* @function
+* Parses dates from twitter for timeline & direct messages
+* @function parseTwitterDate
 * @param {string} tdate - Date from twitter api
 * @param {boolean} booleanValue - boolean for whether adding
-* to timeline or direct messages
+*        to timeline or direct messages
 * @returns {string} Appropriate string based on the result of the difference
-* between twitter api date & user access date
+*        between twitter api date & user access date
 */
 module.exports = function (tdate, booleanValue) {
   // parses a string representation of a date, &

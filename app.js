@@ -3,33 +3,33 @@
  */
 'use strict';
 
- var http = require('http');
+var http = require('http');
 
 // requires all needed modules
 /**
 * Requires express npm module
-* @requires npm install express
+* @requires express
 */
 var express = require('express');
 /**
 * Requires path npm module
-* @requires npm install path
+* @requires path
 */
 var path = require('path');
 // var favicon = require('serve-favicon');
 /**
 * Requires morgan npm module
-* @requires npm install morgan
+* @requires morgan
 */
 var logger = require('morgan');
 /**
 * Requires cookie-parser npm module
-* @requires npm install cookie-parser
+* @requires cookie-parser
 */
 var cookieParser = require('cookie-parser');
 /**
 * Requires body-parser npm module
-* @requires npm install body-parser
+* @requires body-parser
 */
 var bodyParser = require('body-parser');
 
@@ -60,6 +60,10 @@ var client = new Twitter({
   access_token_secret: twitterKeys.access_token_secret
 });
 
+/**
+* Requires streamHandler module to deal with stream from twitter api
+* @requires streamHandler
+*/
 var streamHandler = require('./utils/streamHandler.js');
 
 // view engine setup
@@ -123,15 +127,20 @@ app.use(function (err, req, res, next) {
   });
 });
 
+// creates server
 var server = http.createServer(app);
+
+// server listens on port 3000 & logs message to console
 server.listen(3000, function () {
   console.log('Server listening on: http://localhost:3000');
 });
 
+// creates socket.io listener on the server
 var io = require('socket.io').listen(server);
 
 // uses twitter module to stream from twitter api
 client.stream('statuses/filter', { follow: '2252277176' }, function (stream) {
   console.log('Running stream!');
+  // calls streamHandler function & passes in stream & io
   streamHandler(stream, io);
 }); // client.stream

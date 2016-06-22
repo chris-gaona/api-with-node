@@ -1,8 +1,25 @@
+/** A module. Its name is module:router.
+ * @module receivedMessages
+ */
+
 'use strict';
 
+/**
+* Requires parseTwitterDate module
+* Function to parse the twitter dates
+* @requires parseTwitterDate
+*/
 var parseTwitterDate = require('./parseDate.js');
 
-module.exports = function(messages) {
+/**
+* Gets received direct messages for user from Twitter api
+* @function getReceivedMessages
+* @param {object} messages - messages object sent in response from twitter api
+* @returns {object} object containing messages received by the user & the real
+*          names of those who sent direct messages to the user
+*/
+
+module.exports = function (messages) {
   // defines needed variables
   var messagesReceivedArray = [];
   var recipientName = [];
@@ -36,5 +53,10 @@ module.exports = function(messages) {
     // pushes object to array
     messagesReceivedArray.push(messagesReceivedObject);
   } // for loop
-  return { messagesReceivedArray: messagesReceivedArray, recipientName: recipientName };
+  // returns object of messages received by user & real names of those who
+  // sent direct messages to the user
+  return {
+    messagesReceivedArray: messagesReceivedArray,
+    recipientName: recipientName
+  };
 };
