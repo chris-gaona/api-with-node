@@ -1,6 +1,9 @@
 /** A module. Its name is module:app.
  * @module app
  */
+'use strict';
+
+ var http = require('http');
 
 // requires all needed modules
 /**
@@ -35,6 +38,29 @@ var routes = require('./routes/index');
 var users = require('./routes/users');
 
 var app = express();
+
+// Twitter module to make Twitter api requests
+/**
+* Requires twitter npm module to handle request to twitter api
+* @requires npm install twitter
+*/
+var Twitter = require('twitter');
+// adds twitter keys from external file
+var twitterKeys = require('../twitter-config.json');
+
+// defines client object for Twitter module
+/**
+* Twitter API client keys & secrets
+* @name client
+*/
+var client = new Twitter({
+  consumer_key: twitterKeys.consumer_key,
+  consumer_secret: twitterKeys.consumer_secret,
+  access_token_key: twitterKeys.access_token_key,
+  access_token_secret: twitterKeys.access_token_secret
+});
+
+var streamHandler = require('./utils/streamHandler.js');
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -97,4 +123,15 @@ app.use(function (err, req, res, next) {
   });
 });
 
-module.exports = app;
+var server = http.createServer(app);
+server.listen(3000, function () {
+  console.log('Server listening on: http://localhost:3000');
+});
+
+var io = require('socket.io').listen(server);
+
+// uses twitter module to stream from twitter api
+client.stream('statuses/filter', { follow: '2252277176' }, function (stream) {
+  console.log('Running stream!');
+  streamHandler(stream, io);
+}); // client.stream

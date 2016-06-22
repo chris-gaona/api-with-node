@@ -13,43 +13,22 @@ $(function () {
     countChar($(this).val().length);
   });
 
-  // function to get the tweet stream results & add new
-  // tweet without refreshing the page
-  function getTweetStream () {
-    // ajax request to get stream data
-    $.ajax({
-      type: 'GET',
-      url: '/stream-tweets',
-      // on successful response
-      success: function (response) {
-        // if there is a response
-        if (response) {
-          console.log(response);
-          // create text to prepend as new tweet
-          var prependText = '<li><strong class="app--tweet--timestamp">' + response.date + '</strong><a class="app--tweet--author"><div class="app--avatar" style="background-image: url(' + response.image + ')"><img src="' + response.image + '"></div><h4>' + response.name + '</h4> @' + response.username + '</a><p>' + response.text + '</p><ul class="app--tweet--actions circle--list--inline"><li><a class="app--reply"><span class="tooltip">Reply</span><img class="inject-me" src="images/reply.svg"></a></li><li><a class="app--repeat"><span class="tooltip">Retweet</span><img class="inject-me" src="images/retweet.svg"><strong>' + ' ' + response.retweet + '</strong></a></li><li><a class="app--like"><span class="tooltip">Like</span><img class="inject-me" src="images/like.svg"><strong>' + ' ' + response.like + '</strong></a></li></ul></li>';
+  var socket = io.connect();
+  socket.on('tweet', function (response) {
+    console.log(response);
+    // create text to prepend as new tweet
+    var prependText = '<li><strong class="app--tweet--timestamp">' + response.date + '</strong><a class="app--tweet--author"><div class="app--avatar" style="background-image: url(' + response.image + ')"><img src="' + response.image + '"></div><h4>' + response.name + '</h4> @' + response.username + '</a><p>' + response.text + '</p><ul class="app--tweet--actions circle--list--inline"><li><a class="app--reply"><span class="tooltip">Reply</span><img class="inject-me" src="images/reply.svg"></a></li><li><a class="app--repeat"><span class="tooltip">Retweet</span><img class="inject-me" src="images/retweet.svg"><strong>' + ' ' + response.retweet + '</strong></a></li><li><a class="app--like"><span class="tooltip">Like</span><img class="inject-me" src="images/like.svg"><strong>' + ' ' + response.like + '</strong></a></li></ul></li>';
 
-          // prepend the new tweet
-          $('ul.app--tweet--list').prepend(prependText);
+    // prepend the new tweet
+    $('ul.app--tweet--list').prepend(prependText);
 
-          // svg elements to inject
-          var mySVGsToInject = document.querySelectorAll('img.inject-me');
+    // svg elements to inject
+    var mySVGsToInject = document.querySelectorAll('img.inject-me');
 
-          // do the injection
-          // uses SVGInjector plugin for this
-          SVGInjector(mySVGsToInject);
-        } else {
-          console.log('There was an issue with the response');
-        }
-      },
-      // on error
-      error: function (error) {
-        // log the error
-        console.log(error);
-      }
-    });
-  } // getTweetStream()
-
-  getTweetStream();
+    // do the injection
+    // uses SVGInjector plugin for this
+    SVGInjector(mySVGsToInject);
+  });
 
   // on click of tweet button on app
   $('button.button-primary').on('click', function () {
