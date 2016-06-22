@@ -1,6 +1,16 @@
+/** A module. Its name is module:router.
+ * @module friendsInfo
+ */
+
 'use strict';
 
-module.exports = function(friends) {
+/**
+* Gets friends info for user from Twitter api
+* @function getfriendsInfo
+* @param {object} friends - friends object sent in response from twitter api
+* @returns {array} array of 5 most recent friends
+*/
+module.exports = function (friends) {
   // define needed variables
   var friendsArray = [];
 
@@ -20,5 +30,6 @@ module.exports = function(friends) {
     };
     friendsArray.push(friendsObject);
   }
+  // returns array of most recent 5 friends user is following
   return friendsArray;
 };

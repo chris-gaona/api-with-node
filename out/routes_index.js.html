@@ -31,19 +31,28 @@
  */
 
 'use strict';
-// call modules &amp; assign them to variables
+// calls modules &amp; assign them to variables
+
 /**
 * Requires express npm module
-* @requires npm install express
+* @requires express
 */
 var express = require('express');
+// creates express router
 var router = express.Router();
-// Twitter module to make Twitter api requests
+
 /**
-* Requires twitter npm module to handle request to twitter api
-* @requires npm install twitter
+* Requires async npm module
+* @requires async
+*/
+var async = require('async');
+
+/**
+* Requires twitter npm module
+* @requires twitter
 */
 var Twitter = require('twitter');
+
 // adds twitter keys from external file
 var twitterKeys = require('../../twitter-config.json');
 
@@ -60,403 +69,120 @@ var client = new Twitter({
 });
 
 /**
-* Parses dates from twitter for timeline &amp; direct
-* messages
-* @function
-* @param {string} tdate - Date from twitter api
-* @param {boolean} booleanValue - boolean for whether adding
-* to timeline or direct messages
-* @returns {string} Appropriate string based on the result of the difference
-* between twitter api date &amp; user access date
+* Requires getTimelineInfo module
+* user tweet feed
+* @requires getTimelineInfo
 */
-function parseTwitterDate (tdate, booleanValue) {
-  // parses a string representation of a date, &amp;
-  // returns the number of milliseconds since
-  // January 1, 1970
-  var systemDate = new Date(Date.parse(tdate));
-  // gets today's date
-  var userDate = new Date();
-  // splits tdate string at space into array with
-  // each word
-  var splitDate = tdate.split(' ');
-  // gets difference between twitter date &amp; user date
-  // divide the value by 1000 to change milliseconds
-  // into seconds
-  var diff = Math.floor((userDate - systemDate) / 1000);
-
-  // adds text depending on how many seconds the diff is
-  // booleanValue is used to deterime to put text in
-  // timeline section or direct messages section
-  if (diff &lt;= 1) { return 'just now'; }
-
-  if (diff &lt; 60 &amp;&amp; booleanValue === true) { return diff + 's'; }
-  if (diff &lt; 60 &amp;&amp; booleanValue === false) { return diff + ' seconds ago'; }
-
-  if (diff &lt;= 90 &amp;&amp; booleanValue === true) { return '1m'; }
-  if (diff &lt;= 90 &amp;&amp; booleanValue === false) { return 'one minute ago'; }
-
-  if (diff &lt;= 3540 &amp;&amp; booleanValue === true) { return Math.round(diff / 60) + 'm'; }
-  if (diff &lt;= 3540 &amp;&amp; booleanValue === false) { return Math.round(diff / 60) + ' minutes ago'; }
-
-  if (diff &lt;= 5400 &amp;&amp; booleanValue === true) { return '1h'; }
-  if (diff &lt;= 5400 &amp;&amp; booleanValue === false) { return '1 hour ago'; }
-
-  if (diff &lt;= 86400 &amp;&amp; booleanValue === true) { return Math.round(diff / 3600) + 'h'; }
-  if (diff &lt;= 86400 &amp;&amp; booleanValue === false) { return Math.round(diff / 3600) + ' hours ago'; }
-
-  if (diff &lt;= 129600 &amp;&amp; booleanValue === true) { return '1d'; }
-  if (diff &lt;= 129600 &amp;&amp; booleanValue === false) { return '1 day ago'; }
-
-  if (diff &lt; 604800 &amp;&amp; booleanValue === true) { return Math.round(diff / 86400) + 'd'; }
-  if (diff &lt; 604800 &amp;&amp; booleanValue === false) { return Math.round(diff / 86400) + ' days ago'; }
-
-  if (diff &lt;= 777600 &amp;&amp; booleanValue === true) { return '1w'; }
-  if (diff &lt;= 777600 &amp;&amp; booleanValue === false) { return '1 week ago'; }
-
-  // if none of the above return true show actual date
-  return splitDate[1] + ' ' + splitDate[2];
-}
-
-// gets /stream-tweets route &amp; handles request &amp; response
-// for streaming routes
-router.get('/stream-tweets', function (req, res, next) {
-  console.log('Running stream!');
-  // uses twitter module to stream from twitter api
-  client.stream('statuses/filter', { follow: '2252277176' }, function (stream) {
-    // on receiving the data do the following
-    stream.on('data', function (tweet) {
-      // if the tweet has been retweeted use this object
-      if (tweet.retweeted_status !== undefined) {
-        res.json({
-          'success': true,
-          'name': tweet.user.name,
-          'username': tweet.user.screen_name,
-          'text': tweet.text,
-          'retweet': tweet.retweeted_status.retweet_count,
-          'like': tweet.retweeted_status.favorite_count,
-          'image': tweet.user.profile_image_url_https,
-          'date': parseTwitterDate(tweet.created_at, true)
-        });
-      // else if it's a new tweet use this object
-      } else {
-        res.json({
-          'success': true,
-          'name': tweet.user.name,
-          'username': tweet.user.screen_name,
-          'text': tweet.text,
-          'retweet': tweet.retweet_count,
-          'like': tweet.favorite_count,
-          'image': tweet.user.profile_image_url_https,
-          'date': parseTwitterDate(tweet.created_at, true)
-        });
-      } // if statement
-    }); // on data
-    // on stream error log the error
-    stream.on('error', function (error) {
-      console.log(error);
-      throw error;
-    }); // on error
-  }); // client.stream
-}); // router.get
+var getTimelineInfo = require('../utils/timelineInfo.js');
+/**
+* Requires getfriendsInfo module
+* user friends info
+* @requires getfriendsInfo
+*/
+var getfriendsInfo = require('../utils/friendsInfo.js');
+/**
+* Requires getReceivedMessages module
+* direct messages received by user
+* @requires getReceivedMessages
+*/
+var getReceivedMessages = require('../utils/receivedMessages.js');
+/**
+* Requires getSentMessages module
+* direct messages sent by user
+* @requires getSentMessages
+*/
+var getSentMessages = require('../utils/sentMessages.js');
 
 // define params variable for twitter module
 var params = {screen_name: 'chrissgaona', count: 5};
 
-/**
-* Gets user twitter feed....5 recent tweets
-* @function
-* @param res - response to send to client
-*/
-function getTimelineInfo (res) {
-  // uses Twitter module to get timeline info
-  // passing in params for get request to twitter API
-  client.get('statuses/user_timeline', params, function (error, tweets, response) {
-    // defines needed variables
-    var tweetsArray = [];
-    var profileImage;
-    var backgroundImage;
+/* GET home page. */
+router.get('/', function (req, res, next) {
+  // async.parallel method to call the following methods using asynchronous control flow
+  async.parallel([
+    getUserTimeline,
+    getUserFriends,
+    getMessagesReceived,
+    getMessagesSent
+  //  results are passed to the final callback as an array
+  ], function (err, results) {
+    if (!err) {
+      var username = getTimelineInfo(results[0]).tweetsObject.screen_name,
+        following = getTimelineInfo(results[0]).tweetsObject.friends_count,
+        tweets = getTimelineInfo(results[0]).tweets,
+        friends = getfriendsInfo(results[1]),
+        messagesReceivedArray = getReceivedMessages(results[2]).messagesReceivedArray,
+        recipientName = getReceivedMessages(results[2]).recipientName,
+        allMessages = getSentMessages(results[3], messagesReceivedArray, recipientName).allMessages,
+        recipName = getSentMessages(results[3], messagesReceivedArray, recipientName).recipName,
+        profileImage = getTimelineInfo(results[0]).profileImage,
+        backgroundImage = getTimelineInfo(results[0]).backgroundImage;
 
-    // if there is no error
-    if (!error) {
-      var tweetsObject;
-
-      // creates for loop through tweets response from
-      // twitter API
-      for (var i = 0; i &lt; tweets.length; i++) {
-        profileImage = tweets[i].user.profile_image_url_https;
-        backgroundImage = tweets[i].user.profile_banner_url;
-
-        // if tweet has been retweeted use the following
-        // object
-        if (tweets[i].retweeted_status !== undefined) {
-          /**
-          * Recent 5 tweets of user
-          * @name tweets object
-          */
-          tweetsObject = {
-            created_at: parseTwitterDate(tweets[i].created_at, true),
-            profile_image: tweets[i].user.profile_image_url_https,
-            name: tweets[i].user.name,
-            screen_name: tweets[i].user.screen_name,
-            text: tweets[i].retweeted_status.text,
-            retweet_count: tweets[i].retweeted_status.retweet_count,
-            favorite_count: tweets[i].retweeted_status.favorite_count,
-            friends_count: tweets[i].user.friends_count
-          };
-
-        // else if tweet has NOT been retweeted use
-        // the following object
-        } else {
-          tweetsObject = {
-            created_at: parseTwitterDate(tweets[i].created_at, true),
-            profile_image: tweets[i].user.profile_image_url_https,
-            name: tweets[i].user.name,
-            screen_name: tweets[i].user.screen_name,
-            text: tweets[i].text,
-            retweet_count: tweets[i].retweet_count,
-            favorite_count: tweets[i].favorite_count,
-            friends_count: tweets[i].user.friends_count
-          };
-        } // if statement
-        // push the object to tweetsArray
-        tweetsArray.push(tweetsObject);
-      } // for loop
-
-      // calls getFriends function &amp; passes in needed
-      // variables as parameters
-      getFriends(tweetsObject, tweetsArray, profileImage, backgroundImage, res);
-    } else {
-      // else if error log it
-      console.log(error);
-    } // if statement
-  }); // client.get
-} // getTimelineInfo()
-
-/**
-* Gets friends of user from twitter api
-* @function
-* @param tweetsObject {object} - raw tweets object
-* @param tweetsArray {array} - tweets array containing
-* 5 recent tweets
-* @param profileImage {string} - contains profile image
-* of user to perform
-* @param backgroundImage {string} - contains user
-* background image
-* @param res - response to send to client
-*/
-function getFriends (tweetsObject, tweetsArray, profileImage, backgroundImage, res) {
-  // uses twitter module to get friends list
-  client.get('friends/list', params, function (error, friends, response) {
-    // define needed variables
-    var friendsArray = [];
-
-    // if there is no error...
-    if (!error) {
-      var friendsObject;
-
-      // for loop through the friends
-      for (var i = 0; i &lt; friends.users.length; i++) {
-        /**
-        * Recent 5 friends of user on twitter
-        * @name friends object
-        */
-        friendsObject = {
-          profile_image: friends.users[i].profile_image_url_https,
-          name: friends.users[i].name,
-          screen_name: friends.users[i].screen_name
-        };
-        friendsArray.push(friendsObject);
-      }
-
-      // calls getReceivedMessages &amp; passes in needed
-      // parameters
-      getReceivedMessages(tweetsObject, tweetsArray, profileImage, backgroundImage, res, friendsArray);
-    } else {
-      console.log(error);
-    } // if statement
-  }); // client.get
-} // getFriends()
-
-/**
-* Gets user's 5 recent received direct messages
-* @function
-* @param tweetsObject {object} - raw tweets object
-* @param tweetsArray {array} - tweets array containing
-* 5 recent tweets
-* @param profileImage {string} - contains profile image
-* of user to perform
-* @param backgroundImage {string} - contains user
-* background image
-* @param res - response to send to client
-* @param friendsArray {array} - array containg 5 latest
-* friends
-*/
-function getReceivedMessages (tweetsObject, tweetsArray, profileImage, backgroundImage, res, friendsArray) {
-  // ueses twitter module to get direct messages sent
-  // to the user
-  client.get('direct_messages', params, function (error, messages, response) {
-    // defines needed variables
-    var messagesReceivedArray = [];
-    var recipientName = [];
-
-    // if there is no error...
-    if (!error) {
-      var messagesReceivedObject;
-
-      // loop through messages
-      for (var i = 0; i &lt; messages.length; i++) {
-        var messageDate = messages[i].created_at;
-
-        var recName = messages[i].sender.name;
-
-        // if there are multiple users in direct messages
-        // add names of the users but each name only once
-        if (recipientName.indexOf(recName) === -1) {
-          recipientName.push(messages[i].sender.name);
-        } else {
-          console.log('Already there!');
-        }
-
-        // creates messages received object
-        /**
-        * Recent 5 messages received by user
-        * @name direct messages received object
-        */
-        messagesReceivedObject = {
-          recipient: true,
-          text: messages[i].text,
-          name: messages[i].sender.name,
-          picture: messages[i].sender.profile_image_url_https,
-          created_at: messages[i].created_at,
-          date: parseTwitterDate(messageDate, false)
-        };
-        // pushes object to array
-        messagesReceivedArray.push(messagesReceivedObject);
-      } // for loop
-
-      // calls getSentMessages &amp; adds needed parameters
-      getSentMessages(tweetsObject, tweetsArray, profileImage, backgroundImage, res, friendsArray, messagesReceivedArray, recipientName);
-    } else {
-      console.log(error);
-    } // if statement
-  }); // client.get
-} // getReceivedMessages()
-
-/**
-* Gets user's 5 recent sent direct messages
-* @function
-* @param tweetsObject {object} - raw tweets object
-* @param tweetsArray {array} - tweets array containing
-* 5 recent tweets
-* @param profileImage {string} - contains profile image
-* of user to perform
-* @param backgroundImage {string} - contains user
-* background image
-* @param res - response to send to client
-* @param friendsArray {array} - array containg 5 latest
-* friends
-* @param messagesReceivedArray {array} - contains messages
-* received
-* @param recipientName {string} - recipients name
-*/
-function getSentMessages (tweetsObject, tweetsArray, profileImage, backgroundImage, res, friendsArray, messagesReceivedArray, recipientName) {
-  // uses twitter module to get direct messages sent
-  // by the user
-  client.get('direct_messages/sent', params, function (error, messages, response) {
-    // defines needed variables
-    var messagesSentArray = [];
-    var allMessages;
-
-    // if there is no error
-    if (!error) {
-      var messagesSentObject;
-
-      // loop through messages
-      for (var i = 0; i &lt; messages.length; i++) {
-        var messageDate = messages[i].created_at;
-
-        // adds to messagesSentObject
-        /**
-        * Recent 5 direct messages sent by user
-        * @name direct messages sent object
-        */
-        messagesSentObject = {
-          recipient: false,
-          text: messages[i].text,
-          name: messages[i].sender.name,
-          picture: messages[i].sender.profile_image_url_https,
-          created_at: messages[i].created_at,
-          date: parseTwitterDate(messageDate, false)
-        };
-        // pushes object into array
-        messagesSentArray.push(messagesSentObject);
-      } // for loop
-
-      // adds both received &amp; sent messages into one array
-      allMessages = messagesReceivedArray.concat(messagesSentArray);
-
-      // sorts the array by date to get them in the
-      // correct order
-      /**
-      * Sorts sent &amp; received direct messages by date
-      * @function
-      * @param {string} a - date
-      * @param {string} b - date
-      * @returns {array} Sorted array of all direct messages
-      */
-      allMessages.sort(function (a, b) {
-        var keyA = new Date(a.created_at);
-        var keyB = new Date(b.created_at);
-        // Compare the 2 dates
-        if (keyA &lt; keyB) return 1;
-        if (keyA > keyB) return -1;
-        return 0;
-      });
-
-      var recipName;
-
-      // adds if statement to change string depending on
-      // how many users are a in direct messages section
-      // can handle up to 4 separate users
-      if (recipientName.length === 1) {
-        recipName = recipientName[0];
-      } else if (recipientName.length === 2) {
-        recipName = recipientName[0] + ', ' + recipientName[1];
-      } else if (recipientName.length === 3) {
-        recipName = recipientName[0] + ', ' + recipientName[1] + ', ' + recipientName[2];
-      } else if (recipientName.length === 4) {
-        recipName = recipientName[0] + ', ' + recipientName[1] + ', ' + recipientName[2] + ', ' + recipientName[3];
-      } // if statement
-
-      // finally renders the needed variables into the
-      // index page on page load
-      // jade uses the variables in the object to add
-      // content to the template
+      // render in the jade template
       res.render('index', {
-        username: tweetsObject.screen_name,
-        following: tweetsObject.friends_count,
-        tweets: tweetsArray,
-        friends: friendsArray,
+        username: username,
+        following: following,
+        tweets: tweets,
+        friends: friends,
         messages: allMessages,
         recipient: recipName,
         image: profileImage,
         background: backgroundImage
       });
     } else {
-      console.log(error);
-    } // if statement
-  }); // client.get
-} // getSentMessages()
-
-/* GET home page. */
-router.get('/', function (req, res, next) {
-
-  getTimelineInfo(res);
-
+      console.log(err);
+    }
+  });
 }); // router.get()
 
-/** Posts new tweet from application to twitter api
-* @function
+/**
+* Gets recent tweets from user timeline
+* @function getUserTimeline
+* @param callback - adds tweets to first part [0] of results array
+*/
+function getUserTimeline (callback) {
+  client.get('statuses/user_timeline', params, function (error, tweets, response) {
+    if (error) { console.log(error); callback(true); return; }
+    callback(null, tweets);
+  });
+}
+/**
+* Gets recent friends user is following
+* @function getUserFriends
+* @param callback - adds tweets to second part [1] of results array
+*/
+function getUserFriends (callback) {
+  client.get('friends/list', params, function (error, friends, response) {
+    if (error) { console.log(error); callback(true); return; }
+    callback(null, friends);
+  });
+}
+/**
+* Gets direct messages received by user
+* @function getMessagesReceived
+* @param callback - adds tweets to third part [2] of results array
+*/
+function getMessagesReceived (callback) {
+  client.get('direct_messages', params, function (error, messages, response) {
+    if (error) { console.log(error); callback(true); return; }
+    callback(null, messages);
+  });
+}
+/**
+* Gets direct messages sent by user
+* @function getMessagesSent
+* @param callback - adds tweets to fourth part [3] of results array
+*/
+function getMessagesSent (callback) {
+  client.get('direct_messages/sent', params, function (error, messagesSent, response) {
+    if (error) { console.log(error); callback(true); return; }
+    callback(null, messagesSent);
+  });
+}
+
+/**
+* Posts new tweet from application to twitter api
+* @function postNewTweet
 * @param res - response to send to client
 * @param {string} statusText - tweet text created by user
 */
@@ -467,7 +193,6 @@ function postNewTweet (res, statusText) {
   client.post('statuses/update', tweetParams, function (error, tweet, response) {
     // if there is no error...
     if (!error) {
-      console.log(tweet);
       // send response to client handled by ajax
       res.json({
         'message': 'Successfully sent tweet!',
@@ -489,9 +214,8 @@ function postNewTweet (res, statusText) {
 router.post('/tweet', function (req, res, next) {
   // contains tweet sent from ajax request as data
   var statusText = req.body.tweet;
-
+  // calls postNewTweet function
   postNewTweet(res, statusText);
-
 }); // router.post()
 
 // exports router
@@ -506,13 +230,13 @@ module.exports = router;
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-app.html">app</a></li><li><a href="module-router.html">router</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-app.html">app</a></li><li><a href="module-friendsInfo.html">friendsInfo</a></li><li><a href="module-parseDate.html">parseDate</a></li><li><a href="module-receivedMessages.html">receivedMessages</a></li><li><a href="module-router.html">router</a></li><li><a href="module-sentMessages.html">sentMessages</a></li><li><a href="module-streamHandler.html">streamHandler</a></li><li><a href="module-timelineInfo.html">timelineInfo</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Fri Jun 10 2016 17:26:39 GMT-0700 (PDT)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Wed Jun 22 2016 15:21:22 GMT-0700 (PDT)
 </footer>
 
 <script> prettyPrint(); </script>

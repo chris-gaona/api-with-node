@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Home</title>
+    <title>JSDoc: Source: utils/friendsInfo.js</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,37 +17,53 @@
 
 <div id="main">
 
-    <h1 class="page-title">Home</h1>
+    <h1 class="page-title">Source: utils/friendsInfo.js</h1>
 
     
 
 
 
     
-
-
-    <h3> </h3>
-
-
-
-
-
-
-
-
-
-
-    
-
-
-
-
     <section>
-        <article><p>#api-with-node
-Consume an API with Node.js from Techdegree and Treehouse</p></article>
+        <article>
+            <pre class="prettyprint source linenums"><code>/** A module. Its name is module:router.
+ * @module friendsInfo
+ */
+
+'use strict';
+
+/**
+* Gets friends info for user from Twitter api
+* @function getfriendsInfo
+* @param {object} friends - friends object sent in response from twitter api
+* @returns {array} array of 5 most recent friends
+*/
+module.exports = function (friends) {
+  // define needed variables
+  var friendsArray = [];
+
+  // if there is no error...
+  var friendsObject;
+
+  // for loop through the friends
+  for (var i = 0; i &lt; friends.users.length; i++) {
+    /**
+    * Recent 5 friends of user on twitter
+    * @name friends object
+    */
+    friendsObject = {
+      profile_image: friends.users[i].profile_image_url_https,
+      name: friends.users[i].name,
+      screen_name: friends.users[i].screen_name
+    };
+    friendsArray.push(friendsObject);
+  }
+  // returns array of most recent 5 friends user is following
+  return friendsArray;
+};
+</code></pre>
+        </article>
     </section>
-
-
 
 
 
