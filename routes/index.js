@@ -79,16 +79,16 @@ router.get('/', function (req, res, next) {
   //  results are passed to the final callback as an array
   ], function (err, results) {
     if (!err) {
-      var username = getTimelineInfo(results[0]).tweetsObject.screen_name,
-        following = getTimelineInfo(results[0]).tweetsObject.friends_count,
-        tweets = getTimelineInfo(results[0]).tweets,
-        friends = getfriendsInfo(results[1]),
-        messagesReceivedArray = getReceivedMessages(results[2]).messagesReceivedArray,
-        recipientName = getReceivedMessages(results[2]).recipientName,
-        allMessages = getSentMessages(results[3], messagesReceivedArray, recipientName).allMessages,
-        recipName = getSentMessages(results[3], messagesReceivedArray, recipientName).recipName,
-        profileImage = getTimelineInfo(results[0]).profileImage,
-        backgroundImage = getTimelineInfo(results[0]).backgroundImage;
+      var username = getTimelineInfo(results[0]).tweetsObject.screen_name;
+      var following = getTimelineInfo(results[0]).tweetsObject.friends_count;
+      var tweets = getTimelineInfo(results[0]).tweets;
+      var friends = getfriendsInfo(results[1]);
+      var messagesReceivedArray = getReceivedMessages(results[2]).messagesReceivedArray;
+      var recipientName = getReceivedMessages(results[2]).recipientName;
+      var allMessages = getSentMessages(results[3], messagesReceivedArray, recipientName).allMessages;
+      var recipName = getSentMessages(results[3], messagesReceivedArray, recipientName).recipName;
+      var profileImage = getTimelineInfo(results[0]).profileImage;
+      var backgroundImage = getTimelineInfo(results[0]).backgroundImage;
 
       // render in the jade template
       res.render('index', {

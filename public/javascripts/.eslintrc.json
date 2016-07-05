@@ -9,5 +9,9 @@
     "env": {
         "browser": true,
         "jquery": true
+    },
+    "globals": {
+      "io": true,
+      "SVGInjector": true
     }
 }

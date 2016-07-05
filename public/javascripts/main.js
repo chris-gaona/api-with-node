@@ -1,7 +1,11 @@
 $(function () {
   'use strict';
 
-  // function count characters for textarea
+  /**
+  * Function count characters for textarea
+  * @function countChar
+  * @param val - adds the character count to the ui
+  */
   function countChar (val) {
     $('#tweet-char').text(140 - val);
   }
