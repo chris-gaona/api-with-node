@@ -55,6 +55,7 @@ $(function () {
 
           // empty the textarea for user to do another tweet
           $('#tweet-textarea').val('');
+          countChar($('#tweet-textarea').val().length);
         } else {
           console.warn('there was an issue');
         } // if statement
