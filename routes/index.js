@@ -103,6 +103,7 @@ router.get('/', function (req, res, next) {
       });
     } else {
       console.log(err);
+      next(err);
     }
   });
 }); // router.get()
@@ -114,7 +115,7 @@ router.get('/', function (req, res, next) {
 */
 function getUserTimeline (callback) {
   client.get('statuses/user_timeline', params, function (error, tweets, response) {
-    if (error) { console.log(error); callback(true); return; }
+    if (error) { console.log(error); callback(true); }
     callback(null, tweets);
   });
 }
@@ -125,7 +126,7 @@ function getUserTimeline (callback) {
 */
 function getUserFriends (callback) {
   client.get('friends/list', params, function (error, friends, response) {
-    if (error) { console.log(error); callback(true); return; }
+    if (error) { console.log(error); callback(true); }
     callback(null, friends);
   });
 }
@@ -158,7 +159,7 @@ function getMessagesSent (callback) {
 * @param res - response to send to client
 * @param {string} statusText - tweet text created by user
 */
-function postNewTweet (res, statusText) {
+function postNewTweet (res, next, statusText) {
   // sets up tweet from client to be sent to twitter api
   var tweetParams = {status: statusText};
   // uses twitter module to post tweet to twitter
@@ -172,12 +173,7 @@ function postNewTweet (res, statusText) {
       });
     } else {
       console.log(error);
-      // else send error response to client handled by
-      // ajax
-      res.json({
-        'message': 'There was an error!',
-        'errorMessage': error
-      });
+      next(error);
     } // if statement
   }); // client.post
 } // postNewTweet()
@@ -187,7 +183,7 @@ router.post('/tweet', function (req, res, next) {
   // contains tweet sent from ajax request as data
   var statusText = req.body.tweet;
   // calls postNewTweet function
-  postNewTweet(res, statusText);
+  postNewTweet(res, next, statusText);
 }); // router.post()
 
 // exports router
