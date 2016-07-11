@@ -1,7 +1,8 @@
 extends layout
 
 block content
-  h1#error-message= client
+  h1#error-message= error.message
+  h1#error-status= error.status
   #cat
     //- svg image taken from http://codepen.io/miukimiu/pen/Igouf
     img(src="images/cat.svg" alt="cat-svg")

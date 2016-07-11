@@ -110,16 +110,9 @@ app.use(function (req, res, next) {
 if (app.get('env') === 'development') {
   app.use(function (err, req, res, next) {
     res.status(err.status || 500);
-    var message;
-    if (err.status === 404) {
-      message = '404 Page Not Found';
-    } else {
-      message = '500 Server Error';
-    }
     res.render('error', {
       message: err.message,
-      error: err,
-      client: message
+      error: err
     });
   });
 }
