@@ -173,7 +173,7 @@ function postNewTweet (res, next, statusText) {
       });
     } else {
       console.log(error);
-      next(error);
+      next(err);
     } // if statement
   }); // client.post
 } // postNewTweet()

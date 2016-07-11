@@ -95,35 +95,21 @@ app.use('/', routes);
 // don't need the following route but left it in for later time
 app.use('/users', users);
 
-// catch 404 and forward to error handler
-app.use(function (req, res, next) {
-  var err = new Error('Not Found');
-  err.status = 404;
-  next(err);
+// error handlers
+// Handle 404
+app.use(function(req, res) {
+  res.status(404);
+  res.render('error', {
+    message: "404: File Not Found"
+  });
 });
 
-// error handlers
-
-// development error handler
-// will print stacktrace
-// gets rid of stracktrace for this project
-if (app.get('env') === 'development') {
-  app.use(function (err, req, res, next) {
-    res.status(err.status || 500);
-    res.render('error', {
-      message: err.message,
-      error: err
-    });
-  });
-}
-
-// production error handler
-// no stacktraces leaked to user
-app.use(function (err, req, res, next) {
-  res.status(err.status || 500);
+// Handle 500
+app.use(function(err, req, res, next) {
+  res.status(500);
   res.render('error', {
-    message: err.message,
-    error: {}
+    message: "500: Internal Server Error",
+    error: err
   });
 });
 
