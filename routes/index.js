@@ -40,30 +40,7 @@ var client = new Twitter({
   access_token_secret: twitterKeys.access_token_secret
 });
 
-/**
-* Requires getTimelineInfo module
-* user tweet feed
-* @requires getTimelineInfo
-*/
-var getTimelineInfo = require('../utils/timelineInfo.js');
-/**
-* Requires getfriendsInfo module
-* user friends info
-* @requires getfriendsInfo
-*/
-var getfriendsInfo = require('../utils/friendsInfo.js');
-/**
-* Requires getReceivedMessages module
-* direct messages received by user
-* @requires getReceivedMessages
-*/
-var getReceivedMessages = require('../utils/receivedMessages.js');
-/**
-* Requires getSentMessages module
-* direct messages sent by user
-* @requires getSentMessages
-*/
-var getSentMessages = require('../utils/sentMessages.js');
+var utils = require('../utils');
 
 // define params variable for twitter module
 var params = {screen_name: 'chrissgaona', count: 5};
@@ -79,16 +56,16 @@ router.get('/', function (req, res, next) {
   //  results are passed to the final callback as an array
   ], function (err, results) {
     if (!err) {
-      var username = getTimelineInfo(results[0]).tweetsObject.screen_name;
-      var following = getTimelineInfo(results[0]).tweetsObject.friends_count;
-      var tweets = getTimelineInfo(results[0]).tweets;
-      var friends = getfriendsInfo(results[1]);
-      var messagesReceivedArray = getReceivedMessages(results[2]).messagesReceivedArray;
-      var recipientName = getReceivedMessages(results[2]).recipientName;
-      var allMessages = getSentMessages(results[3], messagesReceivedArray, recipientName).allMessages;
-      var recipName = getSentMessages(results[3], messagesReceivedArray, recipientName).recipName;
-      var profileImage = getTimelineInfo(results[0]).profileImage;
-      var backgroundImage = getTimelineInfo(results[0]).backgroundImage;
+      var username = utils.getTimelineInfo(results[0]).tweetsObject.screen_name;
+      var following = utils.getTimelineInfo(results[0]).tweetsObject.friends_count;
+      var tweets = utils.getTimelineInfo(results[0]).tweets;
+      var friends = utils.getfriendsInfo(results[1]);
+      var messagesReceivedArray = utils.getReceivedMessages(results[2]).messagesReceivedArray;
+      var recipientName = utils.getReceivedMessages(results[2]).recipientName;
+      var allMessages = utils.getSentMessages(results[3], messagesReceivedArray, recipientName).allMessages;
+      var recipName = utils.getSentMessages(results[3], messagesReceivedArray, recipientName).recipName;
+      var profileImage = utils.getTimelineInfo(results[0]).profileImage;
+      var backgroundImage = utils.getTimelineInfo(results[0]).backgroundImage;
 
       // render in the jade template
       res.render('index', {
