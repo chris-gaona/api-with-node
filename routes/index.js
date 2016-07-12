@@ -103,7 +103,7 @@ router.get('/', function (req, res, next) {
       });
     } else {
       console.log(err);
-      next(err);
+      next();
     }
   });
 }); // router.get()
@@ -115,7 +115,7 @@ router.get('/', function (req, res, next) {
 */
 function getUserTimeline (callback) {
   client.get('statuses/user_timeline', params, function (error, tweets, response) {
-    if (error) { console.log(error); callback(true); }
+    if (error) { console.log(error); callback(true); return; }
     callback(null, tweets);
   });
 }
@@ -126,7 +126,7 @@ function getUserTimeline (callback) {
 */
 function getUserFriends (callback) {
   client.get('friends/list', params, function (error, friends, response) {
-    if (error) { console.log(error); callback(true); }
+    if (error) { console.log(error); callback(true); return; }
     callback(null, friends);
   });
 }
@@ -173,7 +173,7 @@ function postNewTweet (res, next, statusText) {
       });
     } else {
       console.log(error);
-      next(err);
+      next(new Error('500 - Server Error'));
     } // if statement
   }); // client.post
 } // postNewTweet()
